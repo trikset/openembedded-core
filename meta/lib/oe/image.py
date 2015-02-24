@@ -205,7 +205,7 @@ class Image(ImageDepGraph):
     def _filter_out_commpressed(self, fstype_groups):
         ctypes = self.d.getVar('COMPRESSIONTYPES', True).split()
         cimages = {}
-
+        bb.note ("FSTYPES groups: %s" % fstype_groups)
         filtered_groups = []
         for group in fstype_groups:
             filtered_group = []
@@ -214,15 +214,20 @@ class Image(ImageDepGraph):
                 for ctype in ctypes:
                     if type.endswith("." + ctype):
                         basetype = type[:-len("." + ctype)]
-                        if basetype not in filtered_group:
+                        if  not any(basetype in bt for bt in [filtered_group]+filtered_groups):
+                            bb.note ("filtered: missing %s @ %s" % (basetype,filtered_groups))
                             filtered_group.append(basetype)
+                            bb.note ("filtered: appended %s" % basetype)
                         if basetype not in cimages:
                             cimages[basetype] = []
+                            bb.note ("cimages[%s] was missing" % basetype)
                         if ctype not in cimages[basetype]:
                             cimages[basetype].append(ctype)
+                            bb.note ("cimages[%s].appended(%s)" % (basetype,ctype))
                         break
                 if not basetype and type not in filtered_group:
                     filtered_group.append(type)
+                    bb.note ("filtered: appended %s" % type)
 
             filtered_groups.append(filtered_group)
 
